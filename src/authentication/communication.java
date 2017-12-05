@@ -24,6 +24,7 @@ public class communication
     String TransactionCommand = "";
     String ServerNonce = "";
     String ClientNonce = "";
+    String VerificationInfo = "";
     public communication(String pType, String pSource, String pDestination)
     {
         Type = pType;
@@ -51,6 +52,11 @@ public class communication
         ServerNonce = pServerNonce;
     }
     
+    public void setVerificationInfo(String pVerificationInfo)
+    {
+        VerificationInfo = pVerificationInfo;
+    }
+    
     public void setClientNonce(String pClientNonce)
     {
         ClientNonce = pClientNonce;
@@ -70,6 +76,6 @@ public class communication
     public String getAnswer()
     {
         TransactionID++;
-        return Type + TransactionID + ".    " + Destination + "  --->  " + Source + "   :   " + SessionID + " " + Password + " " + Code + " " + SessionCookie + " " + ServerNonce + '\n';
+        return Type + TransactionID + ".    " + Destination + "  --->  " + Source + "   :   " + SessionID + " " + Code + " " + Password + " " + VerificationInfo + " " + SessionCookie + " " + ServerNonce + '\n';
     }
 }
