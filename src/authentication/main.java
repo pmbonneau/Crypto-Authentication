@@ -258,13 +258,65 @@ public class main {
                     OptionChoiceMenuB = InputReader.nextInt();
                     if (OptionChoiceMenuB == 1)
                     { 
+                        communication CommAddNewRecord = new communication("E", "C", "S");
                         InputReader.reset();
                         System.out.println("Enter User ID :");
                         String UserID = InputReader.next();
+                        CommAddNewRecord.UserID = UserID;
                         System.out.println("Enter private key password :");
                         String PrivateKeyPassword = InputReader.next();
-                        String PrivateKeyIV = "";
-                        generatePublicPrivateKeyPair("RSA", 1024,PrivateKeyIV,PrivateKeyPassword);
+                        String[] Keys = generatePublicPrivateKeyPair("RSA", 1024, PrivateKeyPassword);
+                        CommAddNewRecord.PublicKey = Keys[1];
+                        System.out.printf(CommAddNewRecord.getQuery());
+                        CommAddNewRecord = AddRecordPublicPrivateKey(CommAddNewRecord, UserID, Keys);
+                        System.out.printf(CommAddNewRecord.getAnswer());
+                    }
+                    else
+                    if (OptionChoiceMenuB == 2)
+                    {
+                        InputReader.reset();
+                        System.out.println("Enter User ID :");
+                        String UserID = InputReader.next();
+                        System.out.println("Enter User Password :");
+                        String UserPassword = InputReader.next();   
+
+                        communication CommAuthenticate = new communication("A", "C", "S");
+                        CommAuthenticate.UserID = UserID;
+                        CommAuthenticate.SessionID = generateFiveDigitsRandomNumber();
+                        SessionID = CommAuthenticate.SessionID;
+                        System.out.printf(CommAuthenticate.getQuery());
+                        
+                        String ServerNonce = generateFiveDigitsRandomNumber();
+                        CommAuthenticate.ServerNonce = ServerNonce;
+                        System.out.printf(CommAuthenticate.getAnswer());
+                        
+                        String AuthInfoClientExpected = "";
+                        
+                        Path Path = Paths.get("client.txt");
+                        List<String> lines = Files.readAllLines(Path);
+        
+                        for (int i = 0; i < lines.size(); i++)
+                        {
+                            JSONObject obj = new JSONObject(lines.get(i));
+                            String ReadUserID = obj.get("UserID").toString();
+                            if(ReadUserID.equals(UserID))
+                            {
+                                String ReadPrivateKey =  obj.get("PrivateKey").toString();
+                                String DecryptedPrivateKey = doDecryption(ReadPrivateKey,UserPassword);
+                                byte[] DecodedPrivateKey = Base64.getDecoder().decode(DecryptedPrivateKey);
+                                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                                EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(DecodedPrivateKey);
+                                PrivateKey ClientPrivateKey = keyFactory.generatePrivate(privateKeySpec);
+                                
+                                MessageDigest Digest = MessageDigest.getInstance("SHA1");
+                                byte[] NonceHash = Digest.digest(CommAuthenticate.ServerNonce.getBytes());
+                                AuthInfoClientExpected = Base64.getEncoder().encodeToString(NonceHash);
+                                byte[] AuthInfoClientExpectedEncryptedWithPrivateKey = encryptWithPrivateKey(ClientPrivateKey,AuthInfoClientExpected);
+                                CommAuthenticate.VerificationInfo = Base64.getEncoder().encodeToString(AuthInfoClientExpectedEncryptedWithPrivateKey);
+                            }
+                        }   
+                        
+                        
                         
                     }
                     break;
@@ -277,9 +329,17 @@ public class main {
         }
     }
     
-    // https://gist.github.com/liudong/3993726
-    private static void generatePublicPrivateKeyPair(String keyAlgorithm, int numBits, String PrivateKeyEncryptionIV, String PrivateKeyEncryptionPassword) throws IOException, Exception
+    public static byte[] encryptWithPrivateKey(PrivateKey key, String message) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException
     {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        return cipher.doFinal(message.getBytes());
+    }
+    
+    // https://gist.github.com/liudong/3993726
+    private static String[] generatePublicPrivateKeyPair(String keyAlgorithm, int numBits, String PrivateKeyEncryptionPassword) throws IOException, Exception
+    {
+        String[] Keybag = new String[2];
         try 
         {
             // Get the public/private key pair
@@ -314,9 +374,7 @@ public class main {
             String formatPublic = publicKey.getFormat(); // X.509
 
                 
-            FileWriter WritePublicKey = new FileWriter("client.txt", true);
-            WritePublicKey.write(Base64.getEncoder().encodeToString(publicKeyBytes));
-            WritePublicKey.close();
+            Keybag[1] = Base64.getEncoder().encodeToString(publicKeyBytes);
             
             //System.out.println(Base64.getEncoder().encodeToString(privateKeyBytes));
             
@@ -324,9 +382,7 @@ public class main {
             //String DecryptedPrivateKey = doDecryption(EncryptedPrivateKey,PrivateKeyEncryptionPassword);
             //System.out.println(DecryptedPrivateKey);
             
-            FileWriter WritePrivateKey = new FileWriter("server.txt", true);
-            WritePrivateKey.write(EncryptedPrivateKey);
-            WritePrivateKey.close();
+            Keybag[0] = EncryptedPrivateKey;
 
             //System.out.println("Private Key : " + Base64.getEncoder().encodeToString(privateKeyBytes));
             //System.out.println("Public Key : " + Base64.getEncoder().encodeToString(publicKeyBytes));
@@ -354,7 +410,6 @@ public class main {
             //System.out.println("  Are both private keys equal? " + privateKey.equals(privateKey2));
 
            // System.out.println("  Are both public keys equal? " + publicKey.equals(publicKey2));
-
         } 
         //catch (InvalidKeySpecException specException) 
         //{
@@ -372,6 +427,7 @@ public class main {
             System.out.println("No such algorithm: " + keyAlgorithm);
 
         }
+        return Keybag;
      }
     
     // This method encrypts a string using a key.
@@ -489,6 +545,33 @@ public class main {
         ClientInitialCommunication.Code = "200";
         return ClientInitialCommunication;
     }
+        
+    public static communication AddRecordPublicPrivateKey(communication ClientInitialCommunication, String UserID, String[] ClientKeys) throws NoSuchAlgorithmException, IOException
+    {
+        FileWriter WritePublicKey = new FileWriter("client.txt", true);
+        
+        // Creating new JSON object to store encrypted info.
+        JSONObject obj = new JSONObject();
+        obj.put("ServerID", "SERV1");
+        obj.put("UserID", UserID);
+        obj.put("PrivateKey", ClientKeys[0]);
+        WritePublicKey.write(obj.toString());
+        WritePublicKey.write("\r\n");
+        WritePublicKey.close();
+        ClientInitialCommunication.Code = "200";
+        
+        
+        FileWriter WritePrivateKey = new FileWriter("server.txt", true);
+        obj.put("UserID", UserID);
+        obj.put("PublicKey", ClientKeys[1]);
+        WritePrivateKey.write(obj.toString());
+        WritePrivateKey.write("\r\n");
+        WritePrivateKey.close();
+        
+        ClientInitialCommunication.Code = "200";
+        
+        return ClientInitialCommunication;
+    }
     
     public static communication AuthenticatePassword(communication ClientInitialCommunication, String UserID, String UserPassword) throws NoSuchAlgorithmException, IOException
     {    
@@ -549,6 +632,11 @@ public class main {
         }      
         ClientInitialCommunication.Code = "401";       
         return ClientInitialCommunication;
+    }
+    
+    public static communication AuthenticatePublicPrivateKey(communication ClientInitialCommunication) throws NoSuchAlgorithmException, IOException
+    {    
+        
     }
     
     public static String generateFiveDigitsRandomNumber()

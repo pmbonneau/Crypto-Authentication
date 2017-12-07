@@ -25,6 +25,7 @@ public class communication
     String ServerNonce = "";
     String ClientNonce = "";
     String VerificationInfo = "";
+    String PublicKey = "";
     public communication(String pType, String pSource, String pDestination)
     {
         Type = pType;
@@ -57,6 +58,11 @@ public class communication
         VerificationInfo = pVerificationInfo;
     }
     
+    public void setPublicKey(String pPublicKey)
+    {
+        PublicKey = pPublicKey;
+    }
+    
     public void setClientNonce(String pClientNonce)
     {
         ClientNonce = pClientNonce;
@@ -70,7 +76,7 @@ public class communication
     public String getQuery()
     {
         TransactionID++;
-        return Type + TransactionID + ".    " + Source + "  --->  " + Destination + "   :   " + SessionID + " " + UserID + " " + Password + " " + SessionCookie + " " + TransactionCommand + " " + ClientNonce + '\n';
+        return Type + TransactionID + ".    " + Source + "  --->  " + Destination + "   :   " + SessionID + " " + UserID + " " + Password + " " + PublicKey + " " + SessionCookie + " " + TransactionCommand + " " + ClientNonce + '\n';
     }
     
     public String getAnswer()
