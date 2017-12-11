@@ -76,7 +76,7 @@ public class communication
     public String getQuery()
     {
         TransactionID++;
-        return Type + TransactionID + ".    " + Source + "  --->  " + Destination + "   :   " + SessionID + " " + UserID + " " + Password + " " + PublicKey + " " + SessionCookie + " " + TransactionCommand + " " + ClientNonce + '\n';
+        return Type + TransactionID + ".    " + Source + "  --->  " + Destination + "   :   " + SessionID + " " + UserID + " " + Password + " " + PublicKey + " " + TransactionCommand + " " + SessionCookie + " " + ClientNonce + '\n';
     }
     
     public String getAnswer()
