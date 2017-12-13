@@ -5,6 +5,8 @@
  */
 package authentication;
 
+import java.util.Scanner;
+
 /**
  *
  * @author Pierre-Marc
@@ -75,12 +77,106 @@ public class communication
     
     public String getQuery()
     {
+        Scanner InputReader = new Scanner(System.in);
+        System.out.printf("Do you want to modify the message ? (y for yes or n to leave it as-is." + '\n');
+        if (InputReader.next().equals("y"))
+        {
+            TransactionID++;
+            System.out.printf("Enter SessionID (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                SessionID = InputReader.next();
+            }
+            System.out.printf("Enter UserID (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                UserID = InputReader.next();
+            }
+            System.out.printf("Enter Password (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                Password = InputReader.next();
+            }
+            System.out.printf("Enter Public Key (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                PublicKey = InputReader.next();
+            }
+            System.out.printf("Enter Transaction Command (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                TransactionCommand = InputReader.next();
+            }
+            System.out.printf("Enter Session Cookie (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                SessionCookie = InputReader.next();
+            }
+            System.out.printf("Enter Client Nonce (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                ClientNonce = InputReader.next();
+            }
+            System.out.printf("Enter Server Nonce (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                ClientNonce = InputReader.next();
+            }
+        return Type + TransactionID + ".    " + Source + "  --->  " + Destination + "   :   " + SessionID + " " + UserID + " " + Password + " " + PublicKey + " " + TransactionCommand + " " + SessionCookie + " " + ClientNonce + '\n';
+        }
         TransactionID++;
         return Type + TransactionID + ".    " + Source + "  --->  " + Destination + "   :   " + SessionID + " " + UserID + " " + Password + " " + PublicKey + " " + TransactionCommand + " " + SessionCookie + " " + ClientNonce + '\n';
     }
     
     public String getAnswer()
     {
+        Scanner InputReader = new Scanner(System.in);
+        System.out.printf("Do you want to modify the message ? (y for yes or n to leave it as-is." + '\n');
+        if (InputReader.next().equals("y"))
+        {
+            TransactionID++;
+            System.out.printf("Enter SessionID (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                SessionID = InputReader.next();
+            }
+            System.out.printf("Enter UserID (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                UserID = InputReader.next();
+            }
+            System.out.printf("Enter Password (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                Password = InputReader.next();
+            }
+            System.out.printf("Enter Public Key (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                PublicKey = InputReader.next();
+            }
+            System.out.printf("Enter Transaction Command (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                TransactionCommand = InputReader.next();
+            }
+            System.out.printf("Enter Session Cookie (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                SessionCookie = InputReader.next();
+            }
+            System.out.printf("Enter Client Nonce (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                ClientNonce = InputReader.next();
+            }
+            System.out.printf("Enter Server Nonce (type '$' to leave it unchanged) :" + '\n');
+            if (!InputReader.next().equals("$"))
+            {
+                ClientNonce = InputReader.next();
+            }
+            return Type + TransactionID + ".    " + Destination + "  --->  " + Source + "   :   " + SessionID + " " + Code + " " + Password + " " + VerificationInfo + " " + SessionCookie + " " + ServerNonce + '\n';
+        }
         TransactionID++;
         return Type + TransactionID + ".    " + Destination + "  --->  " + Source + "   :   " + SessionID + " " + Code + " " + Password + " " + VerificationInfo + " " + SessionCookie + " " + ServerNonce + '\n';
     }

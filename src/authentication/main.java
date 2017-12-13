@@ -22,6 +22,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -66,7 +68,8 @@ public class main {
             System.out.printf("1. Mot de passe" + '\n');
             System.out.printf("2. Ms-CHAP-v2" + '\n');
             System.out.printf("3. UAF" + '\n');
-            System.out.printf("4. Quitter" + '\n');
+            System.out.printf("4. View registration info" + '\n');
+            System.out.printf("5. Quitter" + '\n');
 
             Scanner InputReader = new Scanner(System.in);  
             System.out.println("Enter a number: ");
@@ -202,6 +205,11 @@ public class main {
                             System.out.printf(CommTransaction.getAnswer());
                         }
                         
+                    }
+                    else
+                    if (OptionChoiceMenuB == 4)
+                    {
+                        System.exit(0); 
                     }
                     // Set 3 to secondary menu selected option to go back to main menu.
                     OptionChoiceMenuB = 3;
@@ -381,6 +389,11 @@ public class main {
                             System.out.printf(CommTransaction.getAnswer());
                         }
                     }
+                    else
+                    if (OptionChoiceMenuB == 4)
+                    {
+                        System.exit(0); 
+                    }
                     break;
                 case 3:
                     // Set back choice to 0 for main menu.
@@ -390,7 +403,8 @@ public class main {
                     System.out.printf("1. Enregistrer un nouveau compte" + '\n');
                     System.out.printf("2. Authentification" + '\n');
                     System.out.printf("3. Menu précédent" + '\n');
-                    System.out.printf("4. Quitter" + '\n');
+                    System.out.printf("4. View client keybag" + '\n');
+                    System.out.printf("5. Quitter" + '\n');
                     System.out.println("Enter a number: ");
                     OptionChoiceMenuB = InputReader.nextInt();
                     
@@ -603,11 +617,90 @@ public class main {
                             CommTransaction.VerificationInfo = "";
                             System.out.printf(CommTransaction.getAnswer());
                         }
+                    }
+                    else
+                    if (OptionChoiceMenuB == 4)
+                    {
+                        InputReader.reset();
+                            
+                        // Get UserID
+                        System.out.println("Enter user ID :");
+                        String UserID = InputReader.next();
                         
+                        // Get private key password
+                        System.out.println("Enter private key password :");
+                        String PrivateKeyPassword = InputReader.next();
+                        
+                         // Read client registrations file.
+                        Path Path = Paths.get("client.txt");
+                        
+                        // Get all file lines.
+                        List<String> lines = Files.readAllLines(Path);
+        
+                        // For each lines.
+                        for (int i = 0; i < lines.size(); i++)
+                        {
+                            JSONObject obj = new JSONObject(lines.get(i));
+                            String ReadUserID = obj.get("UserID").toString();
+                            
+                            // If user we want to authenticate matches user in the current line.
+                            if(ReadUserID.equals(UserID))
+                            {
+                                // Get private key from file.
+                                String ReadPrivateKey =  obj.get("PrivateKey").toString();
+                                
+                                // Decrypt private key using AES128-CBC
+                                System.out.println(doDecryption(ReadPrivateKey,PrivateKeyPassword) + '\n');
+                                
+                            }
+                        }
+                    }
+                    else
+                    if (OptionChoiceMenuB == 5)
+                    {
+                        System.exit(0); 
                     }
                     break;
                 case 4:
-                    System.out.println("4");
+                    System.out.println("keybag.txt");
+                    // Get register file path.
+                    Path PathKeybag = Paths.get("keybag.txt");
+        
+                    // Read all register entries.
+                    List<String> linesKeybag = Files.readAllLines(PathKeybag);
+        
+                    for (int i = 0; i < linesKeybag.size(); i++)
+                    {
+                        System.out.println(linesKeybag.get(i) + '\n');
+                    }
+                    
+                    System.out.println("client.txt");
+                    // Get register file path.
+                    Path PathClients = Paths.get("client.txt");
+        
+                    // Read all register entries.
+                    List<String> linesClients = Files.readAllLines(PathClients);
+        
+                    for (int i = 0; i < linesClients.size(); i++)
+                    {
+                        System.out.println(linesClients.get(i) + '\n');
+                    }
+                    
+                    System.out.println("server.txt");
+                    // Get register file path.
+                    Path PathServer = Paths.get("server.txt");
+        
+                    // Read all register entries.
+                    List<String> linesServer = Files.readAllLines(PathServer);
+        
+                    for (int i = 0; i < linesServer.size(); i++)
+                    {
+                        System.out.println(linesServer.get(i) + '\n');
+                    }
+                    OptionChoiceMenuB = 3;
+                    break;
+                case 5:
+                    System.exit(0);
                     break;
                 default:
                     break;
@@ -616,19 +709,28 @@ public class main {
     }
     
     // This method encrypts a message using private key.
-    public static byte[] encryptWithPrivateKey(PrivateKey key, String message) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException
+    public static byte[] encryptWithPrivateKey(PrivateKey key, String message) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, SignatureException
     {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, key);
         return cipher.doFinal(message.getBytes());
+        //Signature sign = Signature.getInstance("SHA1withRSA");
+        //sign.initSign(key);
+        //sign.update(message.getBytes());
+        //return sign.sign();
     }
     
     // This method decrypts a message using public key.
-    public static byte[] decryptWithPublicKey(PublicKey key, byte [] encrypted) throws Exception 
+    public static byte[] decryptWithPublicKey(PublicKey key, byte[] encrypted) throws Exception 
     {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, key);
         return cipher.doFinal(encrypted);
+        
+        //Signature sign = Signature.getInstance("SHA1withRSA");
+        //sign.initVerify(key);
+        //sign.update(signed);
+        //return sign.verify(pSignature.getBytes());
     }
     
     // This method generates a key pair.    
