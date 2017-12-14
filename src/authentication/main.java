@@ -22,7 +22,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
@@ -38,7 +37,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.sound.sampled.Line;
 import jsonParser.JSONObject;
 
 /**
@@ -161,6 +159,12 @@ public class main {
                             // Get transaction command from input.
                             System.out.println("Enter transaction command :");
                             String TransactionCommand = InputReader.next();
+                            
+                            if (TransactionCommand.length() > 10)
+                            {
+                                System.out.println("Transaction command too long.");
+                                break;
+                            }
                             
                             // If user decides to end transactions by typing "end" as command.
                             if (TransactionCommand.equals("end"))
@@ -345,6 +349,12 @@ public class main {
                             // Get transaction command from input
                             System.out.println("Enter transaction command :");
                             String TransactionCommand = InputReader.next();
+                            
+                            if (TransactionCommand.length() > 10)
+                            {
+                                System.out.println("Transaction command too long.");
+                                break;
+                            }
                             
                             // If user decides to end transactions by typing "end" as command.
                             if (TransactionCommand.equals("end"))
@@ -552,6 +562,12 @@ public class main {
                             System.out.println("Enter transaction command :");
                             String TransactionCommand = InputReader.next();
                             
+                            if (TransactionCommand.length() > 10)
+                            {
+                                System.out.println("Transaction command too long.");
+                                break;
+                            }
+                            
                             // If user decides to end transactions by typing "end" as command.
                             if (TransactionCommand.equals("end"))
                             {
@@ -575,7 +591,7 @@ public class main {
                             
                             // Print transaction answer (T2).
                             CommTransaction.TransactionID ++;
-                            System.out.printf(CommTransaction.Type + CommTransaction.TransactionID + ".    " + CommTransaction.Source + "  --->  " + CommTransaction.Destination + "   :   " + CommTransaction.SessionID + "    " + CommTransaction.TransactionCommand + "  " + CommTransaction.ServerNonce + '\n');
+                            System.out.printf(CommTransaction.Type + CommTransaction.TransactionID + ".    " + CommTransaction.Destination + "  --->  " + CommTransaction.Source + "   :   " + CommTransaction.SessionID + "    " + CommTransaction.TransactionCommand + "  " + CommTransaction.ServerNonce + '\n');
                            // CommTransaction.TransactionID ++;
                             
                             // Append transaction command with server nonce prime.
@@ -596,26 +612,15 @@ public class main {
                             CommTransaction.TransactionID ++;
                             System.out.printf(CommTransaction.Type + CommTransaction.TransactionID + ".    " + CommTransaction.Source + "  --->  " + CommTransaction.Destination + "   :   " + CommTransaction.SessionID + "    " + CommTransaction.VerificationInfo + '\n');
                             
-                            
-
-                            
-                            // Verify session cookie (*** Server Side ***).
-                            //if (SessionCookie.equals(CommTransaction.SessionCookie))
-                            //{
-                                // If valide, set 200 (ok) as transaction code.
-                               CommTransaction.Code = Integer.toString(200);
-                            //}
-                           // else
-                           // {
-                                // Otherwise, set 401 (error).
-                               //CommTransaction.Code = Integer.toString(401);
-                          //  }
+                            // If valide, set 200 (ok) as transaction code.
+                            CommTransaction.Code = Integer.toString(200);
                             
                             // Print answer (T4)
                             // Removing server nonce and verification info from result transaction since we don't need those anymore and don't want those to be printed in answer.
                             CommTransaction.ServerNonce = "";
                             CommTransaction.VerificationInfo = "";
-                            System.out.printf(CommTransaction.getAnswer());
+                            CommTransaction.TransactionID ++;
+                            System.out.printf(CommTransaction.Type + CommTransaction.TransactionID + ".    " + CommTransaction.Destination + "  --->  " + CommTransaction.Source + "   :   " + CommTransaction.SessionID + "    " + CommTransaction.Code + '\n');
                         }
                     }
                     else
@@ -714,10 +719,6 @@ public class main {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, key);
         return cipher.doFinal(message.getBytes());
-        //Signature sign = Signature.getInstance("SHA1withRSA");
-        //sign.initSign(key);
-        //sign.update(message.getBytes());
-        //return sign.sign();
     }
     
     // This method decrypts a message using public key.
@@ -726,11 +727,6 @@ public class main {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, key);
         return cipher.doFinal(encrypted);
-        
-        //Signature sign = Signature.getInstance("SHA1withRSA");
-        //sign.initVerify(key);
-        //sign.update(signed);
-        //return sign.verify(pSignature.getBytes());
     }
     
     // This method generates a key pair.    
@@ -758,51 +754,12 @@ public class main {
             // Encode to string then set public key as Keybag[1].
             Keybag[1] = Base64.getEncoder().encodeToString(publicKeyBytes);
             
-            //System.out.println(Base64.getEncoder().encodeToString(privateKeyBytes));
-            
             // Encrypt private key using AES128-CBC.
             String EncryptedPrivateKey = doEncryption(Base64.getEncoder().encodeToString(privateKeyBytes), PrivateKeyEncryptionPassword);
-            //String DecryptedPrivateKey = doDecryption(EncryptedPrivateKey,PrivateKeyEncryptionPassword);
-            //System.out.println(DecryptedPrivateKey);
             
             // Set private key as Keybag[0].
             Keybag[0] = EncryptedPrivateKey;
-
-            //System.out.println("Private Key : " + Base64.getEncoder().encodeToString(privateKeyBytes));
-            //System.out.println("Public Key : " + Base64.getEncoder().encodeToString(publicKeyBytes));
-
-
-
-            // The bytes can be converted back to public and private key objects
-
-           // KeyFactory keyFactory = KeyFactory.getInstance(keyAlgorithm);
-
-            //EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-
-            //PrivateKey privateKey2 = keyFactory.generatePrivate(privateKeySpec);
-
-
-
-            //EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-
-            //PublicKey publicKey2 = keyFactory.generatePublic(publicKeySpec);
-
-
-
-            // The original and new keys are the same
-
-            //System.out.println("  Are both private keys equal? " + privateKey.equals(privateKey2));
-
-           // System.out.println("  Are both public keys equal? " + publicKey.equals(publicKey2));
         } 
-        //catch (InvalidKeySpecException specException) 
-        //{
-
-        //    System.out.println("Exception");
-
-        //    System.out.println("Invalid Key Spec Exception");
-
-        //} 
         catch (NoSuchAlgorithmException e) 
         {
 
